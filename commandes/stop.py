@@ -20,5 +20,5 @@ class Stop(commands.Cog):
         else:
             await ctx.send("Vous n'avez pas la permission d'utiliser cette commande")
 
-def setup(bot):
-    bot.add_cog(Stop(bot)) 
+async def setup(bot):
+    await bot.add_cog(Stop(bot)) 

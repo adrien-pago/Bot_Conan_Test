@@ -15,5 +15,5 @@ class Build(commands.Cog):
             await ctx.send(f"❌ Une erreur est survenue lors de la vérification des constructions: {str(e)}")
             print(f"Erreur build_command: {e}")
 
-def setup(bot):
-    bot.add_cog(Build(bot)) 
+async def setup(bot):
+    await bot.add_cog(Build(bot)) 

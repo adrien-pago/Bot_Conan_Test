@@ -2,6 +2,11 @@ import logging
 from discord.ext import tasks
 from config.logging_config import setup_logging
 from database.database_classement import DatabaseClassement
+from utils.ftp_handler import FTPHandler
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = setup_logging()
 
@@ -11,7 +16,10 @@ class KillTracker:
         self.bot = bot
         self.channel_id = channel_id
         self.db = DatabaseClassement()
-        logger.info(f"KillTracker initialisé avec channel_id: {channel_id}")
+        self.ftp = FTPHandler()
+        self.last_message = None
+        self.log_file_path = os.getenv('FTP_LOG_PATH', 'ConanSandbox/Saved/Logs/ConanSandbox.log')
+        logger.info(f"KillTracker initialisé avec channel_id: {channel_id} et log_path: {self.log_file_path}")
 
     async def start(self):
         """Démarre le tracker de kills"""
@@ -58,7 +66,6 @@ class KillTracker:
             logger.info(f"Statistiques mises à jour pour {killer_name} et {victim_name}")
         except Exception as e:
             logger.error(f"Erreur lors de la mise à jour des stats: {e}")
-            raise
 
     def get_kill_stats(self):
         """Récupère les statistiques de kills triées par nombre de kills"""
@@ -74,23 +81,31 @@ class KillTracker:
         if not stats:
             return "```\nAucune statistique disponible\n```"
 
-        message = "```\nClassement du nombre de kills par joueur \n\n"
-        message += "Joueur         | Kills\n"
-        message += "----------------------\n"
+        message = "```\n🏆 Classement des Kills 🏆\n\n"
+        message += "Rang | Joueur         | Kills\n"
+        message += "-----|----------------|-------\n"
 
         for i, stat in enumerate(stats, 1):
-            player_name = stat['player_name'][:10].ljust(10)
+            player_name = stat['player_name'][:12].ljust(12)
             kills = str(stat['kills']).rjust(5)
-            message += f"{i:2d}. {player_name} | {kills}\n"
+            message += f"{i:3d}  | {player_name} | {kills}\n"
 
         message += "```"
         return message
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=5)
     async def update_kills_task(self):
-        """Met à jour le classement des kills toutes les minutes"""
+        """Met à jour le classement des kills toutes les 5 secondes"""
         try:
             logger.info("Exécution de update_kills_task...")
+            
+            # Lire les logs
+            log_content = self.ftp.read_database(self.log_file_path)
+            if log_content:
+                # Vérifier les morts dans les logs
+                self.db.check_death_in_logs(log_content.decode('utf-8', errors='ignore'))
+            
+            # Mettre à jour l'affichage
             channel = self.bot.get_channel(self.channel_id)
             if not channel:
                 logger.error(f"Canal {self.channel_id} introuvable")
@@ -105,10 +120,15 @@ class KillTracker:
             message = self.format_kill_stats(stats)
             
             try:
-                # Supprimer les anciens messages
-                await channel.purge(limit=1)
+                # Supprimer l'ancien message si on en a un
+                if self.last_message:
+                    try:
+                        await self.last_message.delete()
+                    except:
+                        pass
+                
                 # Envoyer le nouveau message
-                await channel.send(message)
+                self.last_message = await channel.send(message)
                 logger.info("Classement des kills mis à jour")
             except Exception as e:
                 logger.error(f"Erreur lors de l'envoi du message: {e}")

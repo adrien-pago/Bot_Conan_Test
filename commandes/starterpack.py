@@ -101,5 +101,5 @@ class StarterPack(commands.Cog):
             logger.error(traceback.format_exc())
             await ctx.send("❌ Une erreur est survenue lors de l'ajout du pack de départ. Veuillez contacter un administrateur.")
 
-def setup(bot):
-    bot.add_cog(StarterPack(bot)) 
+async def setup(bot):
+    await bot.add_cog(StarterPack(bot)) 

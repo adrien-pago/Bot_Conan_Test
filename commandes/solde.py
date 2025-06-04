@@ -36,5 +36,5 @@ class Solde(commands.Cog):
         finally:
             conn.close()
 
-def setup(bot):
-    bot.add_cog(Solde(bot)) 
+async def setup(bot):
+    await bot.add_cog(Solde(bot)) 

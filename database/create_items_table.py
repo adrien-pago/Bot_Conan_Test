@@ -17,6 +17,7 @@ def create_items_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             item_id INTEGER NOT NULL,
+            id_item_shop NOT NULL,
             count INTEGER DEFAULT 1,
             price INTEGER DEFAULT 0,
             cooldown INTEGER DEFAULT 0,
@@ -40,15 +41,25 @@ def create_items_tables():
         )
         ''')
 
-        # Ajouter les items du starter pack s'ils n'existent pas déjà
+        # Ajouter les items du starter pack s'ils n'existent pas déjà ne plus l'utilsier et prendre shop_item
         starter_items = [
-            (1, "Piolet stellaire", 51020, 1, 100, 0, "Outils", 1),
-            (2, "couteau stellaire", 51312, 1, 100, 0, "Outils", 1),
-            (3, "Grande hache stellaire", 50492, 1, 100, 0, "Armes", 1),
-            (4, "Coffre en fer", 80852, 1, 100, 0, "Stockage", 1),
-            (5, "Cheval", 92226, 1, 300, 0, "Pets", 1),
-            (6, "Selle légère", 2708, 1, 50, 0, "Pets", 1),
-            (7, "Extrait d'aoles", 53002, 1, 20, 0, "Potions", 1)
+            (1, "Piolet stellaire", 51020, 100, 1, 100, 0, "Outils", 1),
+            (2, "couteau stellaire", 51312, 101, 1, 100, 0, "Outils", 1),
+            (3, "Grande hache stellaire", 50492, 200, 1, 100, 0, "Armes", 1),
+            (4, "Coffre en fer", 80852, 400 , 1,  100, 0, "Stockage", 1),
+            (5, "Cheval", 92226, 300, 1,  300, 0, "Pets", 1),
+            (6, "Selle légère", 2708, 301, 1,  50, 0, "Pets", 1),
+            (7, "Extrait d'aoles", 53002, 500, 1, 20, 0, "Potions", 1)
+        ]
+        # Ajouter les items du shop si elles n'existent pas déjà
+        shop_items = [
+            (1, "Piolet stellaire", 51020, 100, 1, 100, 0, "Outils", 1),
+            (2, "couteau stellaire", 51312, 101, 1, 100, 0, "Outils", 1),
+            (3, "Grande hache stellaire", 50492, 200, 1, 100, 0, "Armes", 1),
+            (4, "Coffre en fer", 80852, 400 , 1,  100, 0, "Stockage", 1),
+            (5, "Cheval", 92226, 300, 1,  300, 0, "Pets", 1),
+            (6, "Selle légère", 2708, 301, 1,  50, 0, "Pets", 1),
+            (7, "Extrait d'aoles", 53002, 500, 1, 20, 0, "Potions", 1)
         ]
 
         # Vérifier si les items existent déjà

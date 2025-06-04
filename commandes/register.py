@@ -25,5 +25,5 @@ class Register(commands.Cog):
         except Exception as e:
             await ctx.send("❌ Une erreur est survenue lors de l'enregistrement.")
 
-def setup(bot):
-    bot.add_cog(Register(bot)) 
+async def setup(bot):
+    await bot.add_cog(Register(bot)) 

@@ -14,5 +14,5 @@ class Info(commands.Cog):
             return
         await self.bot.player_sync.get_player_info(ctx)
 
-def setup(bot):
-    bot.add_cog(Info(bot)) 
+async def setup(bot):
+    await bot.add_cog(Info(bot)) 

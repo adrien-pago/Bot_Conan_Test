@@ -50,5 +50,5 @@ class KillsStatus(commands.Cog):
             await ctx.send(f"❌ Erreur: {str(e)}")
             print(f"Erreur kills_status_command: {e}")
 
-def setup(bot):
-    bot.add_cog(KillsStatus(bot)) 
+async def setup(bot):
+    await bot.add_cog(KillsStatus(bot)) 

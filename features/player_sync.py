@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from discord.ext import tasks
 from config.logging_config import setup_logging
 from database.database_sync import DatabaseSync
+from database.database_classement import DatabaseClassement
 from utils.ftp_handler import FTPHandler
 
 logger = setup_logging()
@@ -18,6 +19,7 @@ class PlayerSync:
         self.log_file_path = log_file_path
         self.ftp = ftp_handler or FTPHandler()
         self.db = DatabaseSync()
+        self.classement_db = DatabaseClassement()
         self.game_db_path = 'game.db'
         self.verification_codes = {}
         self.verification_timeouts = {}
@@ -58,9 +60,24 @@ class PlayerSync:
             logger.error(f"Erreur lors du parsing de la ligne de log: {e}")
         return None, None, None, None
 
+    def parse_kill_line(self, line):
+        """Parse une ligne de log pour détecter un kill"""
+        try:
+            # Format attendu : [2025.06.01-17.57.38:972][555]LogKill: Killer: pago-fraise (uid 12364) killed Victim: victime-name (uid 56789)
+            match = re.search(r'LogKill: Killer: ([^()]+) \(uid (\d+)\) killed Victim: ([^()]+) \(uid (\d+)\)', line)
+            if match:
+                killer_name = match.group(1).strip()
+                killer_uid = match.group(2)
+                victim_name = match.group(3).strip()
+                victim_uid = match.group(4)
+                return killer_name, killer_uid, victim_name, victim_uid
+        except Exception as e:
+            logger.error(f"Erreur lors du parsing de la ligne de kill: {e}")
+        return None, None, None, None
+
     @tasks.loop(seconds=5)
     async def check_logs(self):
-        """Vérifie les logs pour les codes de vérification"""
+        """Vérifie les logs pour les codes de vérification et les kills"""
         try:
             # Lire les logs
             log_content = self.ftp.read_database(self.log_file_path)
@@ -68,12 +85,26 @@ class PlayerSync:
                 logger.error("Impossible de lire les logs")
                 return
 
-            # Convertir en texte et filtrer les lignes de chat
+            # Convertir en texte et filtrer les lignes
             log_text = log_content.decode('utf-8', errors='ignore')
             chat_lines = [line for line in log_text.splitlines() if 'ChatWindow' in line]
+            kill_lines = [line for line in log_text.splitlines() if 'LogKill' in line]
+            
             logger.info(f"Nombre de lignes de chat trouvées: {len(chat_lines)}")
+            logger.info(f"Nombre de lignes de kill trouvées: {len(kill_lines)}")
 
-            # Récupérer tous les codes de vérification en attente
+            # Traiter les kills
+            for line in kill_lines:
+                killer_name, killer_uid, victim_name, victim_uid = self.parse_kill_line(line)
+                if killer_name and killer_uid and victim_name and victim_uid:
+                    logger.info(f"Kill détecté: {killer_name} a tué {victim_name}")
+                    # Vérifier si les joueurs sont valides
+                    if self.classement_db.is_valid_player(killer_name) and self.classement_db.is_valid_player(victim_name):
+                        # Mettre à jour les statistiques
+                        self.classement_db.update_kill_stats(killer_uid, killer_name, victim_uid, victim_name)
+                        logger.info(f"Statistiques mises à jour pour le kill: {killer_name} -> {victim_name}")
+
+            # Traiter les codes de vérification
             pending_verifications = self.db.get_pending_verifications()
             logger.info(f"Vérifications en attente: {len(pending_verifications)}")
 

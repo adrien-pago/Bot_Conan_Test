@@ -56,6 +56,9 @@ ftp_handler = FTPHandler()
 async def on_ready():
     print(f'{bot.user} est connecté à Discord!')
     try:
+        # Chargement des Cogs
+        await load_all_cogs(bot)
+        
         # Initialisation des trackers
         bot.player_tracker = PlayerTracker(bot=bot, channel_id=RENAME_CHANNEL_ID, rcon_client=rcon_client)  # type: ignore
         bot.build_tracker = BuildLimitTracker(bot=bot, channel_id=BUILD_CHANNEL_ID, ftp_handler=ftp_handler)  # type: ignore
@@ -76,17 +79,19 @@ async def on_ready():
     except Exception as e:
         print(f"Erreur lors du démarrage des trackers: {e}")
 
-def load_all_cogs(bot):
+async def load_all_cogs(bot):
     commandes_path = os.path.join(os.path.dirname(__file__), 'commandes')
+    print(f"Chargement des Cogs depuis: {commandes_path}")
     for file in glob.glob(os.path.join(commandes_path, '*.py')):
         if not file.endswith('__init__.py'):
             module = f"commandes.{os.path.splitext(os.path.basename(file))[0]}"
             try:
-                bot.load_extension(module)
+                print(f"Tentative de chargement du module: {module}")
+                await bot.load_extension(module)
+                print(f"✅ Module {module} chargé avec succès")
             except Exception as e:
-                print(f"Erreur lors du chargement du module {module}: {e}")
-
-load_all_cogs(bot)
+                print(f"❌ Erreur lors du chargement du module {module}: {e}")
+                traceback.print_exc()
 
 # Lancer le bot
 bot.run(DISCORD_TOKEN) 
