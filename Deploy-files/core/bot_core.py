@@ -1,11 +1,8 @@
 import discord
 from discord.ext import commands, tasks
 import asyncio
-import logging
 from config.settings import *
 from config.logging_config import setup_logging
-
-logger = setup_logging()
 
 class ConanBot(commands.Bot):
     def __init__(self):

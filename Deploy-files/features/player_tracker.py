@@ -1,4 +1,3 @@
-import logging
 import asyncio
 import discord
 import sys
@@ -9,8 +8,6 @@ import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.rcon_client import RCONClient
-
-logger = logging.getLogger(__name__)
 
 class PlayerTracker:
     def __init__(self, bot, channel_id, rcon_client):
@@ -84,9 +81,5 @@ class PlayerTracker:
             print(f"Erreur lors de la mise à jour du nom du salon : {e}")
 
 if __name__ == "__main__":
-    # Configuration du logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    pass
     

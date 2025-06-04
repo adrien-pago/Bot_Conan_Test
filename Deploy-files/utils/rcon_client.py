@@ -2,23 +2,11 @@
 
 import socket, struct, os, threading
 from dotenv import load_dotenv
-import logging
 import asyncio
 import time
 import json
 
-# Utiliser le logger configuré dans bot.py
-logger = logging.getLogger(__name__)
-
 load_dotenv()
-
-# Utiliser le logger configuré dans bot.py
-logger = logging.getLogger(__name__)
-
-load_dotenv()
-
-# Utiliser le logger configuré dans bot.py
-logger = logging.getLogger(__name__)
 
 class RCONClient:
     DEFAULT_TIMEOUT = 10.0  # Timeout par défaut en secondes
@@ -67,20 +55,17 @@ class RCONClient:
             
             self.retries = 0
             self.connected = True
-            logger.info(f"Connexion RCON réussie après {self.retries} tentatives")
             
         except (socket.timeout, ConnectionRefusedError, ConnectionResetError, BrokenPipeError) as e:
             self.connected = False
             if self.retries < self.max_retries:
                 self.retries += 1
-                logger.warning(f"Échec de la connexion RCON (tentative {self.retries}/{self.max_retries}): {str(e)}")
                 time.sleep(5)
                 self._connect()
             else:
                 raise RuntimeError(f"Impossible de se connecter après {self.max_retries} tentatives: {str(e)}")
         except Exception as e:
             self.connected = False
-            logger.error(f"Erreur inattendue lors de la connexion RCON: {str(e)}")
             raise RuntimeError(f"Erreur lors de la connexion RCON: {str(e)}")
 
     def _ensure_connection(self):
@@ -133,7 +118,6 @@ class RCONClient:
             
             # Essayer la commande GetPlayerList spécifique à Conan Exiles
             resp_player_list = self.execute("GetPlayerList")
-            logger.info(f"Réponse de GetPlayerList: {resp_player_list}")
             
             # Si la commande a fonctionné et retourne des données JSON valides
             if resp_player_list and resp_player_list.strip() and "{" in resp_player_list:
@@ -157,18 +141,15 @@ class RCONClient:
                                 players.append(player["name"])
                         
                         if players:
-                            logger.info(f"Joueurs connectés via GetPlayerList: {players}")
                             return players
                 except Exception as e:
-                    logger.warning(f"Erreur lors du parsing du JSON de GetPlayerList: {e}")
+                    pass
             
             # Si GetPlayerList n'a pas fonctionné, essayer avec ListPlayers
             resp = self.execute("ListPlayers")
-            logger.info(f"Réponse brute de ListPlayers: {resp}")
             
             # Si aucun joueur n'est connecté
             if "No players" in resp or not resp.strip():
-                logger.info("Aucun joueur connecté")
                 return []
             
             players = []
@@ -185,8 +166,6 @@ class RCONClient:
                     continue
                     
                 try:
-                    logger.info(f"Ligne ListPlayers: {line}")
-                    
                     # Format attendu: Idx | Char name | Player name | User ID | Platform ID | Platform Name
                     if "|" in line:
                         parts = line.split("|")
@@ -194,7 +173,6 @@ class RCONClient:
                             char_name = parts[1].strip()
                             if char_name and char_name != "Char name":
                                 players.append(char_name)
-                                logger.info(f"Joueur trouvé: {char_name}")
                     else:
                         # Format alternatif sans pipes
                         parts = line.strip().split()
@@ -203,23 +181,20 @@ class RCONClient:
                             char_name = parts[1]
                             if char_name and char_name != "Steam" and not char_name.isdigit():
                                 players.append(char_name)
-                                logger.info(f"Joueur trouvé (format alternatif): {char_name}")
                 except Exception as e:
-                    logger.warning(f"Erreur lors du parsing d'une ligne de ListPlayers: {line} - {str(e)}")
+                    pass
             
             # Si on a trouvé des joueurs, on retourne la liste
             if players:
-                logger.info(f"Joueurs connectés avec noms de personnage: {players}")
                 return players
             
             # Dernier recours: si la commande ListPlayerIDs est disponible
             try:
                 resp2 = self.execute("ListPlayerIDs")
-                logger.info(f"Réponse de ListPlayerIDs: {resp2}")
                 
                 # Ne pas traiter si la commande n'existe pas
                 if "Couldn't find the command" in resp2:
-                    logger.warning("La commande ListPlayerIDs n'est pas disponible")
+                    pass
                 else:
                     # Extraire les noms des joueurs
                     lines2 = resp2.splitlines()
@@ -235,16 +210,14 @@ class RCONClient:
                                 if char_name and not char_name.isdigit():
                                     players.append(char_name)
                         except Exception as e:
-                            logger.warning(f"Erreur lors du parsing de ListPlayerIDs: {line} - {str(e)}")
+                            pass
             except Exception as e:
-                logger.warning(f"Erreur lors de l'exécution de ListPlayerIDs: {e}")
+                pass
             
             # Retourner la liste finale des joueurs
-            logger.info(f"Joueurs connectés (final): {players}")
             return players
             
         except Exception as e:
-            logger.error(f"Erreur lors de la récupération des joueurs en ligne: {str(e)}")
             return []
 
     def close(self):

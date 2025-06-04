@@ -1,10 +1,7 @@
 import discord
 from discord.ext import commands
-import logging
 from config.settings import *
 from config.logging_config import setup_logging
-
-logger = setup_logging()
 
 class BotCommands(commands.Cog):
     def __init__(self, bot):
@@ -48,7 +45,6 @@ class BotCommands(commands.Cog):
             await ctx.send(embed=embed)
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'affichage des stats: {e}")
             await ctx.send("❌ Une erreur est survenue lors de la récupération des statistiques.")
             
     @commands.command(name='builds')
@@ -74,7 +70,6 @@ class BotCommands(commands.Cog):
             await ctx.send(embed=embed)
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'affichage des constructions: {e}")
             await ctx.send("❌ Une erreur est survenue lors de la récupération des constructions.")
             
     @commands.command(name='players')
@@ -100,7 +95,6 @@ class BotCommands(commands.Cog):
             await ctx.send(embed=embed)
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'affichage des joueurs: {e}")
             await ctx.send("❌ Une erreur est survenue lors de la récupération des joueurs.")
             
     @commands.command(name='clans')
@@ -126,7 +120,6 @@ class BotCommands(commands.Cog):
             await ctx.send(embed=embed)
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'affichage des clans: {e}")
             await ctx.send("❌ Une erreur est survenue lors de la récupération des statistiques des clans.")
             
 async def setup(bot):
