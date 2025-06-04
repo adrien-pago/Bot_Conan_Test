@@ -18,10 +18,7 @@ from features.item_manager import ItemManager
 from database.init_database import init_database
 import glob
 
-# Configuration SSL pour Python 3.13
-ssl._create_default_https_context = ssl._create_unverified_context
-
-# Initialiser la base de données
+# Initialiser la base de données 
 init_database()
 
 # Charger les variables d'environnement
@@ -60,19 +57,19 @@ async def on_ready():
     print(f'{bot.user} est connecté à Discord!')
     try:
         # Initialisation des trackers
-        bot.player_tracker = PlayerTracker(bot=bot, channel_id=RENAME_CHANNEL_ID, rcon_client=rcon_client)
-        bot.build_tracker = BuildLimitTracker(bot=bot, channel_id=BUILD_CHANNEL_ID, ftp_handler=ftp_handler)
-        bot.kill_tracker = KillTracker(bot=bot, channel_id=KILLS_CHANNEL_ID)
-        bot.player_sync = PlayerSync(bot, LOG_FILE_PATH, ftp_handler=ftp_handler)
-        bot.vote_tracker = VoteTracker(bot, TOP_SERVER_CHANNEL_ID, SERVER_PRIVE_CHANNEL_ID, ftp_handler=ftp_handler)
-        bot.item_manager = ItemManager(bot, ftp_handler=ftp_handler)
+        bot.player_tracker = PlayerTracker(bot=bot, channel_id=RENAME_CHANNEL_ID, rcon_client=rcon_client)  # type: ignore
+        bot.build_tracker = BuildLimitTracker(bot=bot, channel_id=BUILD_CHANNEL_ID, ftp_handler=ftp_handler)  # type: ignore
+        bot.kill_tracker = KillTracker(bot=bot, channel_id=KILLS_CHANNEL_ID)  # type: ignore
+        bot.player_sync = PlayerSync(bot, LOG_FILE_PATH, ftp_handler=ftp_handler)  # type: ignore
+        bot.vote_tracker = VoteTracker(bot, TOP_SERVER_CHANNEL_ID, SERVER_PRIVE_CHANNEL_ID, ftp_handler=ftp_handler)  # type: ignore
+        bot.item_manager = ItemManager(bot, ftp_handler=ftp_handler)  # type: ignore
 
         # Démarrage des trackers
-        await bot.player_tracker.start()
-        await bot.build_tracker.start()
-        await bot.kill_tracker.start()
-        await bot.player_sync.start()
-        await bot.vote_tracker.start()
+        await bot.player_tracker.start()  # type: ignore
+        await bot.build_tracker.start()  # type: ignore
+        await bot.kill_tracker.start()  # type: ignore
+        await bot.player_sync.start()  # type: ignore
+        await bot.vote_tracker.start()  # type: ignore
         
         print("Tous les trackers sont démarrés avec succès!")
         
