@@ -4,7 +4,7 @@ from discord.ext import commands
 SHOP_CHANNEL_ID = int(os.getenv('SHOP_CHANNEL_ID', 1379725647579975730))
 COMMANDE_CHANNEL_ID = int(os.getenv('COMMANDE_CHANNEL_ID', 1375046216097988629))
 class Shop(commands.Cog):
-    def init(self, bot):
+    def __init__(self, bot):
         self.bot = bot
         self.shop_channel_id = SHOP_CHANNEL_ID
         self.command_channel_id = COMMANDE_CHANNEL_ID
